@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaGuard — Smart Multi-Node Water Quality Monitoring</title>
+<style>
+  :root{
+    --bg:#0a0e0c;
+    --panel:#10221b;
+    --panel-edge:#1c3a2c;
+    --crt-green:#39ff8f;
+    --crt-cyan:#3ffce0;
+    --amber:#ffb238;
+    --danger:#ff4d5e;
+    --safe:#39ff8f;
+    --ink-dim:#7fa896;
+    --paper:#eef3ee;
+    --pipe:#cfd8d2;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #11271d 0%, transparent 60%),
+      var(--bg);
+    color:var(--paper);
+    font-family:'IBM Plex Sans', Arial, sans-serif;
+  }
+  @font-face{
+    font-family:'IBM Plex Sans';
+    src: local('Arial');
+  }
+  .mono{font-family:'Space Mono','Courier New',monospace;}
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    position:relative;
+    padding:90px 8vw 70px;
+    overflow:hidden;
+    border-bottom:1px solid var(--panel-edge);
+  }
+  .eyebrow{
+    font-family:'Space Mono','Courier New',monospace;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--crt-cyan);
+    font-size:12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:8px;height:8px;border-radius:50%;
+    background:var(--safe);
+    box-shadow:0 0 8px var(--safe);
+    animation:pulse 1.8s infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  h1{
+    font-family:Georgia,'Times New Roman',serif;
+    font-size:clamp(38px,6vw,72px);
+    line-height:1.02;
+    margin:0 0 22px;
+    max-width:14ch;
+    font-weight:600;
+  }
+  h1 em{
+    font-style:normal;
+    color:var(--crt-green);
+  }
+  .hero-sub{
+    max-width:54ch;
+    color:var(--ink-dim);
+    font-size:17px;
+    line-height:1.6;
+    margin-bottom:36px;
+  }
+  .hero-cta{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    font-family:'Space Mono',monospace;
+    font-size:13px;
+    letter-spacing:.04em;
+    text-decoration:none;
+    padding:13px 22px;
+    border-radius:3px;
+    border:1px solid var(--panel-edge);
+    color:var(--paper);
+    transition:.2s;
+    cursor:pointer;
+    background:transparent;
+  }
+  .btn.primary{
+    background:var(--crt-green);
+    color:#06150d;
+    border-color:var(--crt-green);
+    font-weight:700;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn.primary:hover{box-shadow:0 6px 24px -6px rgba(57,255,143,.5);}
+
+  .schematic-strip{
+    margin-top:60px;
+    display:flex;
+    align-items:center;
+    gap:0;
+    color:var(--ink-dim);
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    flex-wrap:wrap;
+  }
+  .schematic-strip .node{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+  }
+  .schematic-strip .dot{
+    width:10px;height:10px;border-radius:50%;background:var(--panel-edge);
+  }
+  .schematic-strip .pipe{
+    flex:1;min-width:30px;height:2px;background:var(--panel-edge);
+    background-image:linear-gradient(90deg, var(--panel-edge) 50%, transparent 50%);
+    background-size:8px 2px;
+  }
+
+  /* ---------- NODES SECTION ---------- */
+  section{padding:80px 8vw;}
+  .section-head{margin-bottom:46px;max-width:60ch;}
+  .section-label{
+    font-family:'Space Mono',monospace;
+    color:var(--crt-cyan);
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .section-head h2{
+    font-family:Georgia,serif;
+    font-size:clamp(26px,3.4vw,38px);
+    margin:0 0 12px;
+    font-weight:600;
+  }
+  .section-head p{color:var(--ink-dim);line-height:1.6;margin:0;}
+
+  .nodes-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:24px;
+  }
+  .node-card{
+    background:linear-gradient(180deg,#0f1f17,#0b150f);
+    border:1px solid var(--panel-edge);
+    border-radius:6px;
+    padding:0;
+    overflow:hidden;
+    position:relative;
+  }
+  .node-card .card-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:16px 20px;
+    border-bottom:1px solid var(--panel-edge);
+  }
+  .node-card .card-head .tag{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    color:var(--ink-dim);
+    letter-spacing:.08em;
+  }
+  .node-card .card-head h3{
+    margin:2px 0 0;
+    font-family:Georgia,serif;
+    font-size:20px;
+  }
+  .node-card .status-pill{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:20px;
+    letter-spacing:.06em;
+    border:1px solid;
+  }
+  .status-pill.safe{color:var(--safe);border-color:var(--safe);background:rgba(57,255,143,.08);}
+  .status-pill.unsafe{color:var(--danger);border-color:var(--danger);background:rgba(255,77,94,.08);}
+
+  .screen{
+    margin:18px 20px 6px;
+    background:#04130c;
+    border:1px solid #143226;
+    border-radius:4px;
+    padding:16px 18px;
+    font-family:'Space Mono',monospace;
+  }
+  .screen .row{
+    display:flex;justify-content:space-between;
+    font-size:14px;
+    padding:4px 0;
+    color:var(--crt-green);
+    text-shadow:0 0 6px rgba(57,255,143,.35);
+  }
+  .screen .row span:first-child{color:var(--ink-dim);text-shadow:none;}
+  .node-card.unsafe-card .screen .row{color:var(--danger);text-shadow:0 0 6px rgba(255,77,94,.3);}
+  .node-card.unsafe-card .screen .row span:first-child{color:#a96a6f;text-shadow:none;}
+
+  .metrics-bar{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+    padding:18px 20px 22px;
+  }
+  .metric{
+    background:#0b1a13;
+    border:1px solid var(--panel-edge);
+    border-radius:4px;
+    padding:10px 12px;
+  }
+  .metric .label{
+    font-family:'Space Mono',monospace;font-size:10px;
+    color:var(--ink-dim);text-transform:uppercase;letter-spacing:.06em;
+    margin-bottom:4px;
+  }
+  .metric .val{font-family:'Space Mono',monospace;font-size:15px;}
+  .metric .range{font-size:9px;color:var(--ink-dim);margin-top:2px;}
+
+  /* ---------- MASTER / SYSTEM FLOW ---------- */
+  .system-panel{
+    background:linear-gradient(180deg,#0f1f17,#0b150f);
+    border:1px solid var(--panel-edge);
+    border-radius:6px;
+    padding:34px;
+    display:flex;
+    gap:40px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .master-screen{
+    flex:1;min-width:280px;
+    background:#04130c;border:1px solid #143226;border-radius:4px;
+    padding:22px;font-family:'Space Mono',monospace;
+  }
+  .master-screen h4{margin:0 0 14px;color:var(--crt-cyan);font-size:13px;letter-spacing:.08em;font-weight:400;}
+  .master-screen .line{display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0;border-bottom:1px dashed #163225;}
+  .master-screen .line:last-child{border-bottom:none;}
+  .ok{color:var(--safe);}
+  .bad{color:var(--danger);}
+
+  .valve-visual{
+    flex:1;min-width:260px;
+    display:flex;flex-direction:column;align-items:center;gap:18px;
+  }
+  .valve-visual .valve-box{
+    width:100%;
+    border:1px dashed var(--panel-edge);
+    border-radius:6px;
+    padding:24px;
+    text-align:center;
+    font-family:'Space Mono',monospace;
+  }
+  .valve-state{
+    font-size:28px;
+    margin:10px 0;
+    letter-spacing:.05em;
+  }
+  .valve-state.open{color:var(--safe);}
+  .valve-state.closed{color:var(--danger);}
+  .pipe-row{
+    display:flex;align-items:center;gap:6px;color:var(--ink-dim);
+  }
+  .pipe-line{flex:1;height:6px;background:var(--pipe);border-radius:3px;opacity:.25;}
+  .pipe-line.flowing{opacity:.9;background:linear-gradient(90deg,var(--crt-cyan),var(--safe));background-size:200% 100%;animation:flow 2s linear infinite;}
+  @keyframes flow{0%{background-position:0% 0;}100%{background-position:200% 0;}}
+
+  /* ---------- HOW IT WORKS ---------- */
+  .steps{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:0;
+    border-top:1px solid var(--panel-edge);
+  }
+  .step{
+    padding:28px 24px;
+    border-bottom:1px solid var(--panel-edge);
+    border-right:1px solid var(--panel-edge);
+  }
+  .step .num{font-family:'Space Mono',monospace;color:var(--crt-green);font-size:13px;margin-bottom:10px;}
+  .step h4{margin:0 0 8px;font-family:Georgia,serif;font-size:17px;}
+  .step p{margin:0;color:var(--ink-dim);font-size:14px;line-height:1.6;}
+
+  /* ---------- THRESHOLDS TABLE ---------- */
+  table.thresh{
+    width:100%;
+    border-collapse:collapse;
+    font-family:'Space Mono',monospace;
+    font-size:13.5px;
+  }
+  table.thresh th, table.thresh td{
+    text-align:left;
+    padding:14px 16px;
+    border-bottom:1px solid var(--panel-edge);
+  }
+  table.thresh th{color:var(--crt-cyan);font-weight:400;text-transform:uppercase;font-size:11px;letter-spacing:.06em;}
+  table.thresh td.ok-text{color:var(--safe);}
+
+  footer{
+    padding:40px 8vw 60px;
+    border-top:1px solid var(--panel-edge);
+    color:var(--ink-dim);
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  }
+
+  @media (max-width:700px){
+    .system-panel{flex-direction:column;align-items:stretch;}
+    .step{border-right:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow">System online · 3 nodes reporting</div>
+  <h1>Know what's in your water <em>before you drink it.</em></h1>
+  <p class="hero-sub">AquaGuard is a multi-node monitoring rig for water coolers and storage tanks. Each node reads pH, TDS, temperature, and turbidity in real time; a master controller cross-checks every reading and shuts the supply valve the moment one tank turns unsafe.</p>
+  <div class="hero-cta">
+    <a href="#nodes" class="btn primary">View live node readings</a>
+    <a href="#how" class="btn">How the system decides "safe"</a>
+  </div>
+
+  <div class="schematic-strip">
+    <div class="node"><div class="dot" style="background:var(--safe);box-shadow:0 0 6px var(--safe)"></div>NODE 1</div>
+    <div class="pipe"></div>
+    <div class="node"><div class="dot" style="background:var(--danger);box-shadow:0 0 6px var(--danger)"></div>NODE 2</div>
+    <div class="pipe"></div>
+    <div class="node"><div class="dot" style="background:var(--safe);box-shadow:0 0 6px var(--safe)"></div>NODE 3</div>
+    <div class="pipe"></div>
+    <div class="node"><div class="dot" style="background:var(--crt-cyan)"></div>MASTER</div>
+    <div class="pipe"></div>
+    <div class="node"><div class="dot" style="background:var(--danger)"></div>VALVE</div>
+  </div>
+</header>
+
+<section id="nodes">
+  <div class="section-head">
+    <div class="section-label">Live readings</div>
+    <h2>Three tanks, three independent verdicts</h2>
+    <p>Each node owns one tank and four sensors. A reading only needs to fail one threshold for that node to flag itself unsafe — the master never overrides a node's own verdict.</p>
+  </div>
+
+  <div class="nodes-grid" id="nodesGrid">
+    <!-- Node 1 -->
+    <div class="node-card" data-node="1">
+      <div class="card-head">
+        <div>
+          <div class="tag">NODE 1 · TANK A</div>
+          <h3>Tank A</h3>
+        </div>
+        <div class="status-pill safe">SAFE</div>
+      </div>
+      <div class="screen">
+        <div class="row"><span>pH</span><span class="v-ph">7.12</span></div>
+        <div class="row"><span>TDS</span><span class="v-tds">186 ppm</span></div>
+        <div class="row"><span>TEMP</span><span class="v-temp">26.3 °C</span></div>
+        <div class="row"><span>TURB</span><span class="v-turb">1.8 NTU</span></div>
+      </div>
+      <div class="metrics-bar">
+        <div class="metric"><div class="label">pH level</div><div class="val">6.5 – 8.5 OK</div><div class="range">Normal drinking range</div></div>
+        <div class="metric"><div class="label">TDS</div><div class="val">&lt; 500 ppm OK</div><div class="range">Total dissolved solids</div></div>
+        <div class="metric"><div class="label">Temp</div><div class="val">10 – 30 °C OK</div><div class="range">Storage temperature</div></div>
+        <div class="metric"><div class="label">Turbidity</div><div class="val">&lt; 5 NTU OK</div><div class="range">Clarity reading</div></div>
+      </div>
+    </div>
+
+    <!-- Node 2 -->
+    <div class="node-card unsafe-card" data-node="2">
+      <div class="card-head">
+        <div>
+          <div class="tag">NODE 2 · TANK B</div>
+          <h3>Tank B</h3>
+        </div>
+        <div class="status-pill unsafe">UNSAFE</div>
+      </div>
+      <div class="screen">
+        <div class="row"><span>pH</span><span class="v-ph">6.31</span></div>
+        <div class="row"><span>TDS</span><span class="v-tds">523 ppm</span></div>
+        <div class="row"><span>TEMP</span><span class="v-temp">27.1 °C</span></div>
+        <div class="row"><span>TURB</span><span class="v-turb">8.7 NTU</span></div>
+      </div>
+      <div class="metrics-bar">
+        <div class="metric"><div class="label">pH level</div><div class="val">6.5 – 8.5 OK</div><div class="range">Reading is below range</div></div>
+        <div class="metric"><div class="label">TDS</div><div class="val">&lt; 500 ppm OK</div><div class="range">Reading exceeds limit</div></div>
+        <div class="metric"><div class="label">Temp</div><div class="val">10 – 30 °C OK</div><div class="range">Storage temperature</div></div>
+        <div class="metric"><div class="label">Turbidity</div><div class="val">&lt; 5 NTU OK</div><div class="range">Reading exceeds limit</div></div>
+      </div>
+    </div>
+
+    <!-- Node 3 -->
+    <div class="node-card" data-node="3">
+      <div class="card-head">
+        <div>
+          <div class="tag">NODE 3 · TANK C</div>
+          <h3>Tank C</h3>
+        </div>
+        <div class="status-pill safe">SAFE</div>
+      </div>
+      <div class="screen">
+        <div class="row"><span>pH</span><span class="v-ph">7.85</span></div>
+        <div class="row"><span>TDS</span><span class="v-tds">245 ppm</span></div>
+        <div class="row"><span>TEMP</span><span class="v-temp">25.6 °C</span></div>
+        <div class="row"><span>TURB</span><span class="v-turb">2.1 NTU</span></div>
+      </div>
+      <div class="metrics-bar">
+        <div class="metric"><div class="label">pH level</div><div class="val">6.5 – 8.5 OK</div><div class="range">Normal drinking range</div></div>
+        <div class="metric"><div class="label">TDS</div><div class="val">&lt; 500 ppm OK</div><div class="range">Total dissolved solids</div></div>
+        <div class="metric"><div class="label">Temp</div><div class="val">10 – 30 °C OK</div><div class="range">Storage temperature</div></div>
+        <div class="metric"><div class="label">Turbidity</div><div class="val">&lt; 5 NTU OK</div><div class="range">Clarity reading</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-head">
+    <div class="section-label">Master controller</div>
+    <h2>One node fails, the whole line shuts off</h2>
+    <p>The master ESP32 polls all three nodes continuously. If any single tank reports unsafe, it closes the solenoid valve immediately — water doesn't reach the outlet until every tank reports safe again.</p>
+  </div>
+
+  <div class="system-panel">
+    <div class="master-screen">
+      <h4>MASTER UNIT — RECEIVING DATA</h4>
+      <div class="line"><span>Node 1</span><span class="ok">SAFE</span></div>
+      <div class="line"><span>Node 2</span><span class="bad">UNSAFE</span></div>
+      <div class="line"><span>Node 3</span><span class="ok">SAFE</span></div>
+      <div class="line"><span>Valve</span><span class="bad" id="valveLineText">CLOSED</span></div>
+    </div>
+
+    <div class="valve-visual">
+      <div class="valve-box">
+        <div class="tag" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">SOLENOID VALVE</div>
+        <div class="valve-state closed" id="valveState">CLOSED</div>
+        <div class="pipe-row">
+          <span class="mono">IN</span>
+          <div class="pipe-line" id="pipeLine"></div>
+          <span class="mono">OUT</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="section-head">
+    <div class="section-label">How it works</div>
+    <h2>From sensor to shutoff, in four steps</h2>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="num">01</div>
+      <h4>Sense</h4>
+      <p>Each node's ESP32 reads pH, TDS, temperature, and turbidity sensors submerged in its tank every few seconds.</p>
+    </div>
+    <div class="step">
+      <div class="num">02</div>
+      <h4>Evaluate</h4>
+      <p>Readings are checked against safe-drinking thresholds locally, and the node's own OLED shows a live SAFE / UNSAFE verdict.</p>
+    </div>
+    <div class="step">
+      <div class="num">03</div>
+      <h4>Report</h4>
+      <p>Each node sends its status to the master ESP32 over Wi-Fi, which aggregates all three into one system view.</p>
+    </div>
+    <div class="step">
+      <div class="num">04</div>
+      <h4>Act</h4>
+      <p>If any node is unsafe, the master triggers the relay module, closing the solenoid valve and stopping water flow to the outlet.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-head">
+    <div class="section-label">Reference</div>
+    <h2>Safe drinking water thresholds used by this system</h2>
+  </div>
+  <table class="thresh">
+    <tr><th>Parameter</th><th>Safe range</th><th>Sensor</th></tr>
+    <tr><td>pH</td><td class="ok-text">6.5 – 8.5</td><td>pH probe</td></tr>
+    <tr><td>TDS</td><td class="ok-text">&lt; 500 ppm</td><td>TDS sensor</td></tr>
+    <tr><td>Temperature</td><td class="ok-text">10°C – 30°C</td><td>Temp probe</td></tr>
+    <tr><td>Turbidity</td><td class="ok-text">&lt; 5 NTU</td><td>Turbidity sensor</td></tr>
+  </table>
+</section>
+
+<footer>
+  <span>AquaGuard — Smart Multi-Node Water Quality Monitoring &amp; Auto Shutoff System</span>
+  <span>Node 1 · Node 2 · Node 3 · Master ESP32 · Relay · Solenoid Valve</span>
+</footer>
+
+<script>
+  // Reflect node 2's unsafe status into the valve visual.
+  const anyUnsafe = document.querySelectorAll('.status-pill.unsafe').length > 0;
+  const valveState = document.getElementById('valveState');
+  const pipeLine = document.getElementById('pipeLine');
+  const valveLineText = document.getElementById('valveLineText');
+
+  function setValve(open){
+    if(open){
+      valveState.textContent = 'OPEN';
+      valveState.className = 'valve-state open';
+      pipeLine.classList.add('flowing');
+      valveLineText.textContent = 'OPEN';
+      valveLineText.className = 'ok';
+    } else {
+      valveState.textContent = 'CLOSED';
+      valveState.className = 'valve-state closed';
+      pipeLine.classList.remove('flowing');
+      valveLineText.textContent = 'CLOSED';
+      valveLineText.className = 'bad';
+    }
+  }
+  setValve(!anyUnsafe);
+
+  // Lightweight simulated live-reading drift, so the dashboard feels alive.
+  function jitter(el, base, spread, decimals, suffix){
+    const val = (base + (Math.random()*2-1)*spread).toFixed(decimals);
+    el.textContent = val + (suffix||'');
+  }
+  document.querySelectorAll('.node-card').forEach(card=>{
+    const isUnsafe = card.classList.contains('unsafe-card');
+    setInterval(()=>{
+      const ph = card.querySelector('.v-ph');
+      const tds = card.querySelector('.v-tds');
+      const temp = card.querySelector('.v-temp');
+      const turb = card.querySelector('.v-turb');
+      if(isUnsafe){
+        jitter(ph, 6.3, 0.15, 2);
+        jitter(tds, 523, 12, 0, ' ppm');
+        jitter(temp, 27.1, 0.3, 1, ' °C');
+        jitter(turb, 8.7, 0.4, 1, ' NTU');
+      } else {
+        jitter(ph, 7.4, 0.3, 2);
+        jitter(tds, 215, 30, 0, ' ppm');
+        jitter(temp, 25.9, 0.5, 1, ' °C');
+        jitter(turb, 2.0, 0.6, 1, ' NTU');
+      }
+    }, 2200);
+  });
+</script>
+
+</body>
+</html>
