@@ -1,0 +1,470 @@
+<style>
+
+  :root{
+    --bg:#0a0e0c;
+    --panel:#0f1f17;
+    --panel-2:#0b1810;
+    --edge:#1c3a2c;
+    --crt-green:#39ff8f;
+    --crt-cyan:#3ffce0;
+    --danger:#ff4d5e;
+    --safe:#39ff8f;
+    --ink:#eef3ee;
+    --ink-dim:#7fa896;
+    --sidebar-w:220px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:Arial,Helvetica,sans-serif;
+    display:flex;
+    min-height:100vh;
+  }
+  .mono{font-family:'Courier New',monospace;}
+
+  /* ---------- SIDEBAR ---------- */
+  .sidebar{
+    width:var(--sidebar-w);
+    background:var(--panel-2);
+    border-right:1px solid var(--edge);
+    padding:24px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    margin-bottom:30px;
+  }
+  .brand .dot{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--safe);box-shadow:0 0 8px var(--safe);
+    animation:pulse 1.8s infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .brand span{font-family:'Courier New',monospace;font-weight:700;letter-spacing:.05em;font-size:15px;}
+
+  .nav-link{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;
+    border-radius:6px;
+    color:var(--ink-dim);
+    text-decoration:none;
+    font-size:13.5px;
+    cursor:pointer;
+    transition:.15s;
+  }
+  .nav-link:hover{background:rgba(57,255,143,.06);color:var(--ink);}
+  .nav-link.active{background:rgba(57,255,143,.1);color:var(--crt-green);}
+  .nav-link .icon{width:16px;text-align:center;font-size:13px;}
+
+  .sidebar-foot{
+    margin-top:auto;
+    font-family:'Courier New',monospace;
+    font-size:11px;
+    color:var(--ink-dim);
+    border-top:1px solid var(--edge);
+    padding-top:14px;
+  }
+
+  /* ---------- MAIN ---------- */
+  .main{
+    flex:1;
+    padding:28px 36px 60px;
+    max-width:1400px;
+  }
+  .topbar{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    flex-wrap:wrap;gap:16px;
+    margin-bottom:28px;
+  }
+  .topbar h1{font-size:22px;font-weight:700;}
+  .topbar p{color:var(--ink-dim);font-size:13px;margin-top:4px;}
+  .topbar-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+
+  .pill-btn{
+    font-family:'Courier New',monospace;
+    font-size:12px;
+    padding:9px 16px;
+    border-radius:20px;
+    border:1px solid var(--edge);
+    background:transparent;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .pill-btn.primary{
+    background:var(--crt-green);
+    color:#06150d;
+    font-weight:700;
+    border-color:var(--crt-green);
+  }
+  .pill-btn.danger{
+    border-color:var(--danger);
+    color:var(--danger);
+  }
+
+  /* ---------- SUMMARY STAT ROW ---------- */
+  .stat-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px;
+    margin-bottom:30px;
+  }
+  .stat-card{
+    background:var(--panel);
+    border:1px solid var(--edge);
+    border-radius:8px;
+    padding:18px 20px;
+  }
+  .stat-card .label{font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.06em;font-family:'Courier New',monospace;}
+  .stat-card .big{font-size:28px;font-weight:700;margin-top:8px;font-family:'Courier New',monospace;}
+  .stat-card .big.safe{color:var(--safe);}
+  .stat-card .big.danger{color:var(--danger);}
+  .stat-card .sub{font-size:11px;color:var(--ink-dim);margin-top:4px;}
+
+  /* ---------- NODES GRID ---------- */
+  .section-title{
+    display:flex;justify-content:space-between;align-items:center;
+    margin:8px 0 16px;
+  }
+  .section-title h2{font-size:16px;font-weight:700;}
+  .section-title span{font-size:11px;color:var(--ink-dim);font-family:'Courier New',monospace;}
+
+  .nodes-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+    gap:18px;
+    margin-bottom:36px;
+  }
+  .node-card{
+    background:var(--panel);
+    border:1px solid var(--edge);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .node-card .head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px 18px;
+    border-bottom:1px solid var(--edge);
+  }
+  .node-card .head h3{font-size:15px;font-weight:700;}
+  .node-card .head .tag{font-size:10.5px;color:var(--ink-dim);font-family:'Courier New',monospace;}
+  .status-pill{
+    font-family:'Courier New',monospace;
+    font-size:10.5px;
+    padding:4px 10px;
+    border-radius:20px;
+    border:1px solid;
+    letter-spacing:.05em;
+  }
+  .status-pill.safe{color:var(--safe);border-color:var(--safe);background:rgba(57,255,143,.08);}
+  .status-pill.unsafe{color:var(--danger);border-color:var(--danger);background:rgba(255,77,94,.08);}
+
+  .gauge-row{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+    padding:16px 18px;
+  }
+  .gauge{
+    background:var(--panel-2);
+    border:1px solid var(--edge);
+    border-radius:6px;
+    padding:10px 12px;
+  }
+  .gauge .label{font-size:10px;color:var(--ink-dim);font-family:'Courier New',monospace;text-transform:uppercase;}
+  .gauge .value{font-family:'Courier New',monospace;font-size:16px;margin:4px 0 6px;}
+  .bar-track{height:5px;background:var(--edge);border-radius:3px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:3px;background:var(--safe);transition:width .4s;}
+  .bar-fill.bad{background:var(--danger);}
+
+  .node-card .footnote{
+    padding:10px 18px 16px;
+    font-size:11px;
+    color:var(--ink-dim);
+    border-top:1px dashed var(--edge);
+    font-family:'Courier New',monospace;
+  }
+
+  /* ---------- BOTTOM ROW: VALVE + LOG ---------- */
+  .bottom-grid{
+    display:grid;
+    grid-template-columns:1fr 1.3fr;
+    gap:18px;
+  }
+  @media (max-width:900px){.bottom-grid{grid-template-columns:1fr;}}
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--edge);
+    border-radius:8px;
+    padding:20px;
+  }
+  .panel h3{font-size:14px;margin-bottom:14px;}
+
+  .valve-display{
+    text-align:center;
+    padding:16px 0 6px;
+  }
+  .valve-display .state{
+    font-family:'Courier New',monospace;
+    font-size:26px;
+    font-weight:700;
+    margin-bottom:14px;
+  }
+  .valve-display .state.open{color:var(--safe);}
+  .valve-display .state.closed{color:var(--danger);}
+  .pipe-row{display:flex;align-items:center;gap:8px;color:var(--ink-dim);font-family:'Courier New',monospace;font-size:12px;}
+  .pipe-line{flex:1;height:6px;background:var(--edge);border-radius:3px;}
+  .pipe-line.flow{background:linear-gradient(90deg,var(--crt-cyan),var(--safe));background-size:200% 100%;animation:flow 2s linear infinite;}
+  @keyframes flow{0%{background-position:0 0}100%{background-position:200% 0}}
+
+  .log-list{
+    display:flex;flex-direction:column;gap:0;
+    font-family:'Courier New',monospace;
+    font-size:12.5px;
+    max-height:260px;
+    overflow-y:auto;
+  }
+  .log-item{
+    display:flex;gap:10px;
+    padding:9px 0;
+    border-bottom:1px solid var(--edge);
+    color:var(--ink-dim);
+  }
+  .log-item .time{color:var(--ink-dim);min-width:54px;}
+  .log-item.alert{color:var(--danger);}
+  .log-item.ok{color:var(--safe);}
+
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-thumb{background:var(--edge);border-radius:3px;}
+
+</style>
+
+
+<aside class="sidebar">
+  <div class="brand"><span class="dot"></span><span>AQUAGUARD</span></div>
+  <a class="nav-link active"><span class="icon">▣</span> Overview</a>
+  <a class="nav-link"><span class="icon">◔</span> Nodes</a>
+  <a class="nav-link"><span class="icon">⌁</span> Valve Control</a>
+  <a class="nav-link"><span class="icon">▤</span> Event Log</a>
+  <a class="nav-link"><span class="icon">⚙</span> Thresholds</a>
+  <a class="nav-link"><span class="icon">✎</span> Settings</a>
+  <div class="sidebar-foot">MASTER ESP32<br>STATUS: ONLINE</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h1>Water Quality Overview</h1>
+      <p>3 nodes connected · last sync <span id="lastSync">just now</span></p>
+    </div>
+    <div class="topbar-right">
+      <button class="pill-btn">Export CSV</button>
+      <button class="pill-btn primary">Refresh</button>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="label">Nodes Safe</div>
+      <div class="big safe" id="statSafe">2 / 3</div>
+      <div class="sub">Tank A, Tank C</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Valve State</div>
+      <div class="big danger" id="statValve">CLOSED</div>
+      <div class="sub">Auto shutoff triggered</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Active Alerts</div>
+      <div class="big danger" id="statAlerts">1</div>
+      <div class="sub">Tank B · TDS + Turbidity</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Uptime</div>
+      <div class="big" id="statUptime">04:12:37</div>
+      <div class="sub">Since last reboot</div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <h2>Node readings</h2>
+    <span>Updates every ~2s</span>
+  </div>
+
+  <div class="nodes-grid" id="nodesGrid">
+    <!-- Node 1 -->
+    <div class="node-card" data-node="1" data-state="safe">
+      <div class="head">
+        <div><h3>Tank A</h3><div class="tag">NODE 1</div></div>
+        <div class="status-pill safe">SAFE</div>
+      </div>
+      <div class="gauge-row">
+        <div class="gauge"><div class="label">pH</div><div class="value v-ph">7.12</div><div class="bar-track"><div class="bar-fill" style="width:78%"></div></div></div>
+        <div class="gauge"><div class="label">TDS (ppm)</div><div class="value v-tds">186</div><div class="bar-track"><div class="bar-fill" style="width:37%"></div></div></div>
+        <div class="gauge"><div class="label">Temp (°C)</div><div class="value v-temp">26.3</div><div class="bar-track"><div class="bar-fill" style="width:60%"></div></div></div>
+        <div class="gauge"><div class="label">Turbidity (NTU)</div><div class="value v-turb">1.8</div><div class="bar-track"><div class="bar-fill" style="width:36%"></div></div></div>
+      </div>
+      <div class="footnote">All parameters within safe range</div>
+    </div>
+
+    <!-- Node 2 -->
+    <div class="node-card" data-node="2" data-state="unsafe">
+      <div class="head">
+        <div><h3>Tank B</h3><div class="tag">NODE 2</div></div>
+        <div class="status-pill unsafe">UNSAFE</div>
+      </div>
+      <div class="gauge-row">
+        <div class="gauge"><div class="label">pH</div><div class="value v-ph">6.31</div><div class="bar-track"><div class="bar-fill bad" style="width:42%"></div></div></div>
+        <div class="gauge"><div class="label">TDS (ppm)</div><div class="value v-tds">523</div><div class="bar-track"><div class="bar-fill bad" style="width:100%"></div></div></div>
+        <div class="gauge"><div class="label">Temp (°C)</div><div class="value v-temp">27.1</div><div class="bar-track"><div class="bar-fill" style="width:64%"></div></div></div>
+        <div class="gauge"><div class="label">Turbidity (NTU)</div><div class="value v-turb">8.7</div><div class="bar-track"><div class="bar-fill bad" style="width:100%"></div></div></div>
+      </div>
+      <div class="footnote" style="color:var(--danger)">TDS exceeds limit · Turbidity exceeds limit</div>
+    </div>
+
+    <!-- Node 3 -->
+    <div class="node-card" data-node="3" data-state="safe">
+      <div class="head">
+        <div><h3>Tank C</h3><div class="tag">NODE 3</div></div>
+        <div class="status-pill safe">SAFE</div>
+      </div>
+      <div class="gauge-row">
+        <div class="gauge"><div class="label">pH</div><div class="value v-ph">7.85</div><div class="bar-track"><div class="bar-fill" style="width:85%"></div></div></div>
+        <div class="gauge"><div class="label">TDS (ppm)</div><div class="value v-tds">245</div><div class="bar-track"><div class="bar-fill" style="width:49%"></div></div></div>
+        <div class="gauge"><div class="label">Temp (°C)</div><div class="value v-temp">25.6</div><div class="bar-track"><div class="bar-fill" style="width:58%"></div></div></div>
+        <div class="gauge"><div class="label">Turbidity (NTU)</div><div class="value v-turb">2.1</div><div class="bar-track"><div class="bar-fill" style="width:42%"></div></div></div>
+      </div>
+      <div class="footnote">All parameters within safe range</div>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="panel">
+      <h3>Solenoid Valve</h3>
+      <div class="valve-display">
+        <div class="state closed" id="valveState">CLOSED</div>
+        <div class="pipe-row">
+          <span>IN</span>
+          <div class="pipe-line" id="pipeLine"></div>
+          <span>OUT</span>
+        </div>
+      </div>
+      <button class="pill-btn danger" style="width:100%;margin-top:16px;" id="overrideBtn">Manual Override</button>
+    </div>
+
+    <div class="panel">
+      <h3>Event Log</h3>
+      <div class="log-list" id="logList">
+        <div class="log-item alert"><span class="time">12:04:21</span><span>Node 2 — TDS exceeded 500 ppm threshold</span></div>
+        <div class="log-item alert"><span class="time">12:04:21</span><span>Node 2 — Turbidity exceeded 5 NTU threshold</span></div>
+        <div class="log-item alert"><span class="time">12:04:22</span><span>Master — Valve CLOSED (auto shutoff)</span></div>
+        <div class="log-item ok"><span class="time">12:01:09</span><span>Node 1 — All parameters nominal</span></div>
+        <div class="log-item ok"><span class="time">12:01:09</span><span>Node 3 — All parameters nominal</span></div>
+        <div class="log-item ok"><span class="time">11:58:44</span><span>Master — System boot complete, 3/3 nodes connected</span></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  // ---- live jitter for readings ----
+  function jitter(el, base, spread, decimals){
+    const val = (base + (Math.random()*2-1)*spread).toFixed(decimals);
+    el.textContent = val;
+    return parseFloat(val);
+  }
+  function setBar(barEl, pct, bad){
+    barEl.style.width = Math.max(4,Math.min(100,pct)) + '%';
+    barEl.classList.toggle('bad', !!bad);
+  }
+
+  document.querySelectorAll('.node-card').forEach(card=>{
+    const unsafe = card.dataset.state === 'unsafe';
+    const bars = card.querySelectorAll('.bar-fill');
+    setInterval(()=>{
+      if(unsafe){
+        const ph = jitter(card.querySelector('.v-ph'), 6.3, 0.15, 2);
+        const tds = jitter(card.querySelector('.v-tds'), 523, 12, 0);
+        const temp = jitter(card.querySelector('.v-temp'), 27.1, 0.3, 1);
+        const turb = jitter(card.querySelector('.v-turb'), 8.7, 0.4, 1);
+        setBar(bars[0], ph/10*100, true);
+        setBar(bars[1], 100, true);
+        setBar(bars[2], temp/40*100, false);
+        setBar(bars[3], 100, true);
+      } else {
+        const ph = jitter(card.querySelector('.v-ph'), 7.4, 0.3, 2);
+        const tds = jitter(card.querySelector('.v-tds'), 215, 30, 0);
+        const temp = jitter(card.querySelector('.v-temp'), 25.9, 0.5, 1);
+        const turb = jitter(card.querySelector('.v-turb'), 2.0, 0.6, 1);
+        setBar(bars[0], ph/10*100, false);
+        setBar(bars[1], tds/500*100, false);
+        setBar(bars[2], temp/40*100, false);
+        setBar(bars[3], turb/5*100, false);
+      }
+    }, 2200);
+  });
+
+  // ---- uptime counter ----
+  let uptime = 4*3600 + 12*60 + 37;
+  setInterval(()=>{
+    uptime++;
+    const h = String(Math.floor(uptime/3600)).padStart(2,'0');
+    const m = String(Math.floor((uptime%3600)/60)).padStart(2,'0');
+    const s = String(uptime%60).padStart(2,'0');
+    document.getElementById('statUptime').textContent = `${h}:${m}:${s}`;
+  }, 1000);
+
+  // ---- valve override toggle ----
+  let valveOpen = false;
+  const valveState = document.getElementById('valveState');
+  const pipeLine = document.getElementById('pipeLine');
+  const overrideBtn = document.getElementById('overrideBtn');
+  const statValve = document.getElementById('statValve');
+
+  function renderValve(){
+    if(valveOpen){
+      valveState.textContent = 'OPEN';
+      valveState.className = 'state open';
+      pipeLine.classList.add('flow');
+      statValve.textContent = 'OPEN';
+      statValve.className = 'big safe';
+      overrideBtn.textContent = 'Force Close';
+    } else {
+      valveState.textContent = 'CLOSED';
+      valveState.className = 'state closed';
+      pipeLine.classList.remove('flow');
+      statValve.textContent = 'CLOSED';
+      statValve.className = 'big danger';
+      overrideBtn.textContent = 'Manual Override';
+    }
+  }
+  overrideBtn.addEventListener('click', ()=>{
+    valveOpen = !valveOpen;
+    renderValve();
+    addLog(valveOpen ? 'Master — Valve OPENED (manual override)' : 'Master — Valve CLOSED (manual override)', valveOpen ? 'ok' : 'alert');
+  });
+  renderValve();
+
+  // ---- log helper ----
+  const logList = document.getElementById('logList');
+  function addLog(text, type){
+    const now = new Date();
+    const time = now.toTimeString().slice(0,8);
+    const div = document.createElement('div');
+    div.className = 'log-item ' + type;
+    div.innerHTML = `<span class="time">${time}</span><span>${text}</span>`;
+    logList.prepend(div);
+  }
+
+  // ---- last sync ticker ----
+  let secs = 0;
+  setInterval(()=>{
+    secs++;
+    document.getElementById('lastSync').textContent = secs + 's ago';
+  }, 1000);
+</script>
+
